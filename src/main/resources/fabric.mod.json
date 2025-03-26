@@ -1,0 +1,20 @@
+{
+    "schemaVersion": 1,
+
+    "id": "syslf",
+    "version": "0.1.0",
+    "license": "ISC",
+
+    "name": "Show Yourself!",
+    "description": "Allow players to hide their armor from others.",
+
+    "environment": "server",
+    "entrypoints": {
+        "server": [
+            "ninja.carter.syslf.ServerMod"
+        ]
+    },
+    "mixins": [
+        "syslf.mixins.json"
+    ]
+}
