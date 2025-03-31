@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,9 +38,17 @@ public class SendPacketMixin {
     private Packet<?> processPackets(Level world, Packet<?> packet) {
         if (packet instanceof ClientboundSetEquipmentPacket ep)
             return processPacket(world, ep);
-        if (packet instanceof ClientboundBundlePacket bp)
-            for (Packet<?> p : bp.subPackets())
-                processPackets(world, p);
+        if (packet instanceof ClientboundBundlePacket bp) {
+            List<Packet<? super ClientGamePacketListener>> bundle = new ArrayList<>();
+            for (Packet<?> p : bp.subPackets()) {
+                @SuppressWarnings("unchecked")
+                Packet<? super ClientGamePacketListener> casted =
+                    (Packet<? super ClientGamePacketListener>) processPackets(world, p);
+                bundle.add(casted);
+            }
+
+            return new ClientboundBundlePacket(bundle);
+        }
         return packet;
     }
 
