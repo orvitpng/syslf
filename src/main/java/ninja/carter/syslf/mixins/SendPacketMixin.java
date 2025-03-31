@@ -1,5 +1,6 @@
-package ninja.carter.syslf.mixin;
+package ninja.carter.syslf.mixins;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.datafixers.util.Pair;
@@ -13,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import ninja.carter.syslf.attachement.ArmorVisibilityUtil;
+import ninja.carter.syslf.attachements.ArmorVisibilityUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +28,7 @@ public class SendPacketMixin {
         argsOnly = true
     )
     private Packet<?> modify(Packet<?> packet) {
-        return ((Object)this instanceof ServerGamePacketListenerImpl listener)
+        return ((Object) this instanceof ServerGamePacketListenerImpl listener)
             ? processPackets(listener.player.level(), packet)
             : packet;
     }
@@ -42,18 +43,21 @@ public class SendPacketMixin {
         return packet;
     }
 
-    @Unique Packet<?> processPacket(Level world, ClientboundSetEquipmentPacket packet) {
+    @Unique
+    private Packet<?> processPacket(Level world, ClientboundSetEquipmentPacket packet) {
         Entity entity = world.getEntity(packet.getEntity());
-        if (!(entity instanceof ServerPlayer player) || ArmorVisibilityUtil.get(player))
+        if (!(entity instanceof ServerPlayer player) || ArmorVisibilityUtil.get(player).visibility())
             return packet;
-        
-        List<Pair<EquipmentSlot, ItemStack>> slots = packet.getSlots();
-        for (int i = 0; i < slots.size(); i++) {
-            EquipmentSlot slot = slots.get(i).getFirst();
-            if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR)
-                slots.set(i, Pair.of(slot, ItemStack.EMPTY));
+
+        List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
+        for (Pair<EquipmentSlot, ItemStack> slot : packet.getSlots()) {
+            EquipmentSlot eq = slot.getFirst();
+            if (eq.getType() == EquipmentSlot.Type.HUMANOID_ARMOR)
+                slots.add(Pair.of(eq, ItemStack.EMPTY));
+            else
+                slots.add(slot);
         }
 
-        return packet;
+        return new ClientboundSetEquipmentPacket(packet.getEntity(), slots);
     }
 }

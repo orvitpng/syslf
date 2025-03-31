@@ -1,6 +1,6 @@
 {
     "required": true,
-    "package": "ninja.carter.syslf.mixin",
+    "package": "ninja.carter.syslf.mixins",
     "server": [
         "SendPacketMixin"
     ]

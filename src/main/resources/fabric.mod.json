@@ -2,7 +2,7 @@
     "schemaVersion": 1,
 
     "id": "syslf",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "license": "ISC",
 
     "name": "Show Yourself!",
@@ -11,10 +11,16 @@
     "environment": "server",
     "entrypoints": {
         "server": [
-            "ninja.carter.syslf.ServerMod"
+            "ninja.carter.syslf.Mod"
         ]
     },
     "mixins": [
         "syslf.mixins.json"
-    ]
+    ],
+
+    "depends": {
+        "fabric-command-api-v2": "*",
+        "fabric-data-attachment-api-v1": "*",
+        "fabric-permissions-api-v0": "*"
+    }
 }
