@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import ninja.carter.syslf.attachements.ArmorVisibilityUtil;
 import org.spongepowered.asm.mixin.Mixin;
@@ -61,7 +62,7 @@ public class SendPacketMixin {
         List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
         for (Pair<EquipmentSlot, ItemStack> slot : packet.getSlots()) {
             EquipmentSlot eq = slot.getFirst();
-            if (eq.getType() == EquipmentSlot.Type.HUMANOID_ARMOR)
+            if (eq.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !slot.getSecond().is(Items.ELYTRA))
                 slots.add(Pair.of(eq, ItemStack.EMPTY));
             else
                 slots.add(slot);
