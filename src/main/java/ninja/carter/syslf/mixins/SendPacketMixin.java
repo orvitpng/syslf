@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
@@ -38,7 +40,8 @@ public class SendPacketMixin {
     @Unique
     private Packet<?> processPackets(Level world, Packet<?> packet) {
         if (packet instanceof ClientboundSetEquipmentPacket ep)
-            return processPacket(world, ep);
+            return processEquipment(world, ep);
+
         if (packet instanceof ClientboundBundlePacket bp) {
             List<Packet<? super ClientGamePacketListener>> bundle = new ArrayList<>();
             for (Packet<?> p : bp.subPackets()) {
@@ -54,10 +57,11 @@ public class SendPacketMixin {
     }
 
     @Unique
-    private Packet<?> processPacket(Level world, ClientboundSetEquipmentPacket packet) {
-        Entity entity = world.getEntity(packet.getEntity());
-        if (!(entity instanceof ServerPlayer player) || ArmorVisibilityUtil.get(player).visibility())
-            return packet;
+    private Packet<?> processEquipment(Level world, ClientboundSetEquipmentPacket packet) {
+        if (
+            !(world.getEntity(packet.getEntity()) instanceof ServerPlayer player)
+            || ArmorVisibilityUtil.get(player).visibility()
+        ) return packet;
 
         List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
         for (Pair<EquipmentSlot, ItemStack> slot : packet.getSlots()) {
